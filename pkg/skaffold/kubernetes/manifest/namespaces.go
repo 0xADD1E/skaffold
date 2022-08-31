@@ -84,9 +84,6 @@ func (r *namespaceCollector) Visit(gk schema.GroupKind, navpath string, o map[st
 // SetNamespace sets labels to a list of Kubernetes manifests if they are not set.
 // Returns error if any manifest in the list has namespace set.
 func (l *ManifestList) SetNamespace(namespace string, rs ResourceSelector) (ManifestList, error) {
-	if namespace == "" {
-		namespace = "default"
-	}
 	var updated ManifestList
 	for _, item := range *l {
 		updatedManifest := item
@@ -94,7 +91,7 @@ func (l *ManifestList) SetNamespace(namespace string, rs ResourceSelector) (Mani
 		if err := yaml.Unmarshal(item, &m); err != nil {
 			return nil, fmt.Errorf("reading Kubernetes YAML: %w", err)
 		}
-		if shouldTransformManifest(m, rs) {
+		if shouldTransformManifest(m, rs) && namespace != "" {
 			var errU error
 			if errU = addOrUpdateNamespace(m, namespace); errU != nil {
 				return nil, errU
